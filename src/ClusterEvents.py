@@ -1,11 +1,22 @@
+
+"""Clusters marked events based on neighbour channels and events occuring"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io as sio
 from collections import Counter
 import random
 
+__author__ = "Shameer Sathar, https://github.com/ssat335"
+__version__ = "0.0.1"
+
 class ClusterEvents:
     def __init__(self, marks):
+        """
+        Init function accepting data matrix as input.
+        Args:
+            marks: Numpy matrix of rows of channels and columns with each index labelled
+        """
         self.data_marks = marks
         (self.channels, self.time_steps) = self.data_marks.shape
         self.search_zone_two_steps = 20
@@ -14,12 +25,28 @@ class ClusterEvents:
         self.data_image_cluster = np.zeros((self.channels, self.time_steps))
 
     def getClusteredEventsAsMatrix(self, label = 1):
+        """
+        Function converts the dictionary to matrix format.
+        Args:
+            label = Event label to be clustered
+        Returns:
+            Cleaned events without any orphas as a matrix with dimensions same
+            as marks matrix received as input.
+        """
         self.cluster = self.clusterEventsOnLabels(label)
         for key in self.cluster:
             self.data_image_cluster[key[1], key[0]] = self.cluster[key]
         return self.data_image_cluster
 
     def removeOrphans(self, channel_list):
+        """
+        Function removes all orphans which as clustered but the count is less than self.cluster_limit
+        Args:
+            channel_list = Event label with corresponding cluster label
+        Returns:
+            Cleaned events without any orphas as a dictionary:
+            {(time_steps, channel): cluster_label}
+        """
         count_of_cluster = Counter(channel_list.values())
         for key in count_of_cluster:
             value = count_of_cluster[key]
@@ -28,6 +55,14 @@ class ClusterEvents:
         return channel_list
 
     def clusterEventsOnLabels(self, label = 1):
+        """
+        Function clusters events and returns each event label with corresponding cluster label.
+        Args:
+            label = Label informatoion to be clustered
+        Returns:
+            Each event label with corresponding cluster label as a dictionary as:
+            {(time_steps, channel): cluster_label}
+        """
         mat_column_sum = np.sum(self.data_marks, axis=0)
         non_zero_indexes = np.where(mat_column_sum > 0)[0]
 
