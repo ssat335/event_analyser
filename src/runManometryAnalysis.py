@@ -13,9 +13,9 @@ from HapsNonHapsDetector import HapsNonHapsDetector
 from ClusterEvents import ClusterEvents
 
 # load the dataset as rows (channles) and columns(time_steps)
-filt_data = sio.loadmat('../CM_filt_raw_data.mat')
+filt_data = sio.loadmat('../HR_manometry_filtData/KH_filtData.mat')
 # load a subset if required
-data_in = filt_data['filtData'][:, 124796:133751]
+data_in = filt_data['filtData']
 
 #detect the Haps and Non-Haps as labels 2 and 1 respectively in a matrix of
 #same dimension as input dataset
