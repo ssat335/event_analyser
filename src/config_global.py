@@ -7,7 +7,7 @@ import os
 import numpy as np
 import scipy.io as sio
 
-datFileName = '../HR_manometry_filtData/KH_filtData.mat'
+datFileName = '../CM_filt_raw_data.mat'
 
 dat = sio.loadmat(datFileName)
 sample_frequency = 1

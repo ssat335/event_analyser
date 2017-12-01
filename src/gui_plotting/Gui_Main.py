@@ -30,10 +30,9 @@ import config_global as sp
 
 from gui_plotting.Gui_Window import GuiWindow
 from gui_plotting.Gui_LinePlots import GuiLinePlots
-from gui_plotting.Animate_Mapped import AnimateMapped
-from gui_plotting.Animate_Live import AnimateLive
 
 from HapsNonHapsDetector import HapsNonHapsDetector
+from ClusterEvents import ClusterEvents
 import matplotlib.pyplot as plt
 
 class GuiMain(QtGui.QMainWindow):
@@ -85,13 +84,7 @@ class GuiMain(QtGui.QMainWindow):
 
 
     def set_dataType_text(self):
-        isNormal = True
-        if isNormal:
-            self.dataTypeLabel.setText("Normal Data Selected")
-        else :
-            self.dataTypeLabel.setText("Pacing Data Selected")
-
-
+        self.dataTypeLabel.setText("Manometry Data Selected")
 
     def reset_add_plots(self) :
         self.LinePlots = []
@@ -141,13 +134,9 @@ class GuiMain(QtGui.QMainWindow):
         #same dimension as input dataset
         detector = HapsNonHapsDetector(self.dataForMarking)
         data_label = detector.obtainHapsNonHapsLabel()
+        clustered_labels = ClusterEvents(data_label).getClusteredEventsAsMatrix()
 
-        # Plot the detected events. Note: it does contain false orphaned marks. Should be called
-        # after obtainHapsNonHapsLabel() method
-        #detector.showHapsNonHaps()
-        #plt.show()
-
-        self.LinePlots.mark_events(self.dataForMarking, data_label)
+        self.LinePlots.mark_events(data_label, clustered_labels)
 
         # Output (logging and for user)
         print "Plotting done"
@@ -156,7 +145,8 @@ class GuiMain(QtGui.QMainWindow):
         self.statBar.showMessage(statBarMessage)
 
     def plot_amplitude_map(self):
-        self.animatedMap = AnimateMapped()
+        pass
+        #self.animatedMap = AnimateMapped()
 
     def setup_file_menu_triggers(self):
         self.ui.ui_menubar.quitAction.triggered.connect(lambda: self.exit_app())

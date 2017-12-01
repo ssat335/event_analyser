@@ -16,7 +16,6 @@ from pyqtgraph.dockarea import *
 
 # User defined imports
 import config_global as sp
-from ClusterEvents import ClusterEvents
 import random
 # from TrainingDataPlot import TrainingDataPlot
 
@@ -78,7 +77,7 @@ class GuiLinePlots:
         self.clear_plots()
 
         c = pg.PlotCurveItem(pen=pg.mkPen('r', width=2))
-        c_event = pg.PlotCurveItem(pen=pg.mkPen('y', width=2))
+        c_event = pg.PlotCurveItem(pen=pg.mkPen('r', width=2))
         self.curve_bottom.append(c)
         self.curve_bottom.append(c_event)
 
@@ -125,7 +124,7 @@ class GuiLinePlots:
         '''
         Rectangular selection region
         '''
-        self.rect = pg.RectROI([300, 300], [4000, 2000], pen=pg.mkPen(color='y', width=2))
+        self.rect = pg.RectROI([300, 300], [4000, 2000], pen=pg.mkPen(color='r', width=3))
         self.plotsScroll.addItem(self.rect)
         self.rect.sigRegionChanged.connect(self.update_plot)
 
@@ -219,25 +218,28 @@ class GuiLinePlots:
             self.trainingDataPlot.add_region([int(round(mousePoint.y()/1.2)), int(round(mousePoint.x()))])
 
 
-    def mark_events(self, dataForMarking, swPredictions) :
+    def mark_events(self, swPredictions, swClustered) :
         # Convert predictions from NN to events to plot
 
         self.swMarksScrlPlot.clear()
         self.swMarksZoomPlot.clear()
 
         # Plot the prediction outputs
-        predictions = swPredictions
-        import timeit
-        start_time = timeit.default_timer()
-        cluster_mat = ClusterEvents(predictions).getClusteredEventsAsMatrix()
-        self.swPositions =  np.where(predictions == 1)
-        self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=6, pen=pg.mkPen(None), brush=pg.mkBrush('g'))
-        self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=6, pen=pg.mkPen(None), brush=pg.mkBrush('g'))
+        # self.swPositions =  np.where(swPredictions == 1)
+        # self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=6, pen=pg.mkPen(None), brush=pg.mkBrush('g'))
+        # self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=6, pen=pg.mkPen(None), brush=pg.mkBrush('g'))
 
-        self.swPositions =  np.where(cluster_mat > 0)
-        self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush('r'))
-        self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush('r'))
+        colors = ['r', 'c', 'm', 'y', 'k', 'g']
+        for val in np.nditer(np.unique(swClustered)):
+            if val == 0:
+                pass
+            else:
+                color = random.randint(0,5)
+                print val, color
+                self.swPositions =  np.where(swClustered ==  val)
+                self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush(color))
+                self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush(color))
 
-        self.swPositions =  np.where(predictions == 2)
+        self.swPositions =  np.where(swPredictions == 2)
         self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=12, pen=pg.mkPen(None), brush=pg.mkBrush('b'))
         self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=12, pen=pg.mkPen(None), brush=pg.mkBrush('b'))
