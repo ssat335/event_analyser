@@ -32,7 +32,7 @@ from gui_plotting.Gui_Window import GuiWindow
 from gui_plotting.Gui_LinePlots import GuiLinePlots
 
 from HapsNonHapsDetector import HapsNonHapsDetector
-from ClusterEvents import ClusterEvents
+from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
 
 class GuiMain(QtGui.QMainWindow):
@@ -128,7 +128,7 @@ class GuiMain(QtGui.QMainWindow):
         self.statBar.showMessage("Detecting Events. . .")
 
         # Setup data and params
-        self.dataForMarking = sp.dat['filtData'][:, 125000:127000]
+        self.dataForMarking = sp.dat['filtData']
 
         #detect the Haps and Non-Haps as labels 2 and 1 respectively in a matrix of
         #same dimension as input dataset
@@ -136,16 +136,24 @@ class GuiMain(QtGui.QMainWindow):
         data_label = detector.obtainHapsNonHapsLabel()
         print(data_label.shape)
         scatter_points = np.where(data_label == 1)
-        print(scatter_points)
-        import matplotlib.pyplot as plot
-        plt.scatter(scatter_points[1], scatter_points[0])
-        plt.show()
-        import scipy.io as sio
-        sio.savemat('/home/ssat335/Desktop/event_analyser/TestClustering/ScatterPoints.mat', {'data':scatter_points})
+        activation_points = np.array(scatter_points).transpose()
+        activation_points[:, 0] = activation_points[:, 0] * 10
+        # Compute DBSCAN
+        db = DBSCAN(eps=25, min_samples=3).fit(activation_points)
+        core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+        core_samples_mask[db.core_sample_indices_] = True
+        labels = db.labels_
+        self.LinePlots.mark_events(data_label, core_samples_mask, labels, 1)
 
-        clustered_labels = ClusterEvents(data_label).getClusteredEventsAsMatrix()
-        print(clustered_labels.shape)
-        self.LinePlots.mark_events(data_label, clustered_labels)
+        scatter_points = np.where(data_label == 2)
+        activation_points = np.array(scatter_points).transpose()
+        activation_points[:, 0] = activation_points[:, 0] * 35
+        # Compute DBSCAN
+        db = DBSCAN(eps=100, min_samples=3).fit(activation_points)
+        core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+        core_samples_mask[db.core_sample_indices_] = True
+        labels = db.labels_
+        self.LinePlots.mark_events(data_label, core_samples_mask, labels, 2)
 
         # Output (logging and for user)
         print "Plotting done"

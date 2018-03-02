@@ -21,17 +21,20 @@ X = np.array(X_init).transpose()
 
 Y = np.zeros(X.shape)
 print(Y.shape)
-Y[:,1] = X[:, 0]
+Y[:,1] = X[:, 0] * 10
 Y[:, 0] = X[:, 1]
 #plt.scatter(Y[:, 0], Y[:, 1])
 #plt.show()
 
 # #############################################################################
 # Compute DBSCAN
-db = DBSCAN(eps=15, min_samples=3).fit(Y)
+db = DBSCAN(eps=25, min_samples=3).fit(Y)
 core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+
 core_samples_mask[db.core_sample_indices_] = True
+print(core_samples_mask)
 labels = db.labels_
+print(labels)
 
 # Number of clusters in labels, ignoring noise if present.
 n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)

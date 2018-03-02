@@ -17,6 +17,8 @@ from pyqtgraph.dockarea import *
 # User defined imports
 import config_global as sp
 import random
+import matplotlib.pyplot as plt
+from random import shuffle
 # from TrainingDataPlot import TrainingDataPlot
 
 class GuiLinePlots:
@@ -52,7 +54,7 @@ class GuiLinePlots:
     def set_current_dataset(self) :
 
         # Set initial plot data
-        self.plotData = sp.dat['filtData'][:, 80000:130000]
+        self.plotData = sp.dat['filtData']
         self.nChans = self.plotData.shape[0]
         self.nSamples = self.plotData.shape[1]
         self.timeBetweenSamples = sp.sample_frequency
@@ -218,27 +220,59 @@ class GuiLinePlots:
             self.trainingDataPlot.add_region([int(round(mousePoint.y()/1.2)), int(round(mousePoint.x()))])
 
 
-    def mark_events(self, swPredictions, swClustered) :
+    def mark_events(self, swPredictions, core_samples_mask, labels, wave_type) :
         # Convert predictions from NN to events to plot
 
-        self.swMarksScrlPlot.clear()
-        self.swMarksZoomPlot.clear()
+        # self.swMarksScrlPlot.clear()
+        # self.swMarksZoomPlot.clear()
+
+        n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+        print('Estimated number of clusters: %d' % n_clusters_)
+
+        scatter_points = np.where(swPredictions == wave_type)
+        X = np.array(scatter_points).transpose()
+        # Black removed and is used for noise instead.
+        unique_labels = set(labels)
+        colors = [plt.cm.Spectral(each)
+                  for each in np.linspace(0, 1, len(unique_labels))]
+        shuffle(colors)
+        symbols = ['none','o', 't']
+        for k, col in zip(unique_labels, colors):
+            col = col
+            if k == -1:
+                # Black used for noise.
+                col = [0, 0, 0, 1]
+                continue
+            col = [val * 255 for val in col]
+            color_sel = tuple(col);
+            if wave_type == 2:
+                color_sel = 'b'
+
+            class_member_mask = (labels == k)
+
+            xy = X[class_member_mask & core_samples_mask]
+            self.swMarksScrlPlot.addPoints(xy[:, 1], xy[:, 0] * 100, symbol=symbols[wave_type], pen=pg.mkPen(None), brush=pg.mkBrush(color_sel), size=14*wave_type)
+            self.swMarksZoomPlot.addPoints(xy[:, 1], xy[:, 0] * 100, symbol=symbols[wave_type], pen=pg.mkPen(None), brush=pg.mkBrush(color_sel), size=14*wave_type)
+
+            xy = X[class_member_mask & ~core_samples_mask]
+            self.swMarksScrlPlot.addPoints(xy[:, 1], xy[:, 0] * 100, symbol=symbols[wave_type], pen=pg.mkPen(None), brush=pg.mkBrush(color_sel), size=14*wave_type)
+            self.swMarksZoomPlot.addPoints(xy[:, 1], xy[:, 0] * 100, symbol=symbols[wave_type], pen=pg.mkPen(None), brush=pg.mkBrush(color_sel), size=14*wave_type)
 
         # Plot the prediction outputs
         # self.swPositions =  np.where(swPredictions == 1)
         # self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=6, pen=pg.mkPen(None), brush=pg.mkBrush('g'))
         # self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=6, pen=pg.mkPen(None), brush=pg.mkBrush('g'))
 
-        colors = ['r', 'c', 'm', 'y', 'k', 'g']
-        for val in np.nditer(np.unique(swClustered)):
-            if val == 0:
-                pass
-            else:
-                color = random.randint(0,5)
-                self.swPositions =  np.where(swClustered ==  val)
-                self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush(color))
-                self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush(color))
-
-        self.swPositions =  np.where(swPredictions == 2)
-        self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=12, pen=pg.mkPen(None), brush=pg.mkBrush('b'))
-        self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=12, pen=pg.mkPen(None), brush=pg.mkBrush('b'))
+        # colors = ['r', 'c', 'm', 'y', 'k', 'g']
+        # for val in np.nditer(np.unique(swClustered)):
+        #     if val == 0:
+        #         pass
+        #     else:
+        #         color = random.randint(0,5)
+        #         self.swPositions =  np.where(swClustered ==  val)
+        #         self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush(color))
+        #         self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush(color))
+        #
+        # self.swPositions =  np.where(swPredictions == 2)
+        # self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=12, pen=pg.mkPen(None), brush=pg.mkBrush('b'))
+        # self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=12, pen=pg.mkPen(None), brush=pg.mkBrush('b'))
