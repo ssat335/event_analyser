@@ -128,14 +128,23 @@ class GuiMain(QtGui.QMainWindow):
         self.statBar.showMessage("Detecting Events. . .")
 
         # Setup data and params
-        self.dataForMarking = sp.dat['filtData']
+        self.dataForMarking = sp.dat['filtData'][:, 125000:127000]
 
         #detect the Haps and Non-Haps as labels 2 and 1 respectively in a matrix of
         #same dimension as input dataset
         detector = HapsNonHapsDetector(self.dataForMarking)
         data_label = detector.obtainHapsNonHapsLabel()
-        clustered_labels = ClusterEvents(data_label).getClusteredEventsAsMatrix()
+        print(data_label.shape)
+        scatter_points = np.where(data_label == 1)
+        print(scatter_points)
+        import matplotlib.pyplot as plot
+        plt.scatter(scatter_points[1], scatter_points[0])
+        plt.show()
+        import scipy.io as sio
+        sio.savemat('/home/ssat335/Desktop/event_analyser/TestClustering/ScatterPoints.mat', {'data':scatter_points})
 
+        clustered_labels = ClusterEvents(data_label).getClusteredEventsAsMatrix()
+        print(clustered_labels.shape)
         self.LinePlots.mark_events(data_label, clustered_labels)
 
         # Output (logging and for user)

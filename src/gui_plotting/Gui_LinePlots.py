@@ -52,7 +52,7 @@ class GuiLinePlots:
     def set_current_dataset(self) :
 
         # Set initial plot data
-        self.plotData = sp.dat['filtData']
+        self.plotData = sp.dat['filtData'][:, 80000:130000]
         self.nChans = self.plotData.shape[0]
         self.nSamples = self.plotData.shape[1]
         self.timeBetweenSamples = sp.sample_frequency
@@ -235,7 +235,6 @@ class GuiLinePlots:
                 pass
             else:
                 color = random.randint(0,5)
-                print val, color
                 self.swPositions =  np.where(swClustered ==  val)
                 self.swMarksScrlPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush(color))
                 self.swMarksZoomPlot.addPoints(x=self.swPositions[1], y=(self.swPositions[0] * 100), size=8, pen=pg.mkPen(None), brush=pg.mkBrush(color))
