@@ -128,7 +128,7 @@ class GuiMain(QtGui.QMainWindow):
         self.statBar.showMessage("Detecting Events. . .")
 
         # Setup data and params
-        self.dataForMarking = sp.dat['filtData']
+        self.dataForMarking = sp.dat['data']['sig'][0][0]
 
         #detect the Haps and Non-Haps as labels 2 and 1 respectively in a matrix of
         #same dimension as input dataset
@@ -137,9 +137,9 @@ class GuiMain(QtGui.QMainWindow):
         print(data_label.shape)
         scatter_points = np.where(data_label == 1)
         activation_points = np.array(scatter_points).transpose()
-        activation_points[:, 0] = activation_points[:, 0] * 10
+        activation_points[:, 0] = activation_points[:, 0] * 22
         # Compute DBSCAN
-        db = DBSCAN(eps=25, min_samples=3).fit(activation_points)
+        db = DBSCAN(eps=50, min_samples=3).fit(activation_points)
         core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
         labels = db.labels_

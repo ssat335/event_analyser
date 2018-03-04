@@ -7,7 +7,7 @@ import os
 import numpy as np
 import scipy.io as sio
 
-datFileName = '../CM_filt_raw_data.mat'
+datFileName = '/home/ssat335/Desktop/event_analyser/utils/python_read_data/CM_20120414_ALL_markedData.mat'
 
 dat = sio.loadmat(datFileName)
 sample_frequency = 1

@@ -54,7 +54,7 @@ class GuiLinePlots:
     def set_current_dataset(self) :
 
         # Set initial plot data
-        self.plotData = sp.dat['filtData']
+        self.plotData = sp.dat['data']['sig'][0][0]
         self.nChans = self.plotData.shape[0]
         self.nSamples = self.plotData.shape[1]
         self.timeBetweenSamples = sp.sample_frequency
@@ -225,6 +225,9 @@ class GuiLinePlots:
 
         # self.swMarksScrlPlot.clear()
         # self.swMarksZoomPlot.clear()
+        print(type(swPredictions), type(core_samples_mask), type(labels))
+        import scipy.io as sio
+        sio.savemat(str(sp.datFileName.split('/')[-1].split('.')[:-1][0]) + 'analysed_data_' + str(wave_type) + '.mat', {'marks': swPredictions, 'mask': core_samples_mask, 'labels': labels})
 
         n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
         print('Estimated number of clusters: %d' % n_clusters_)
