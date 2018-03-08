@@ -85,36 +85,47 @@ def consolidateActivationPoints(waves):
 
 def characteriseWaves(waves):
     #initilise all the variables storing the counts
-    pacemaking = 0
-    colliding = 0
     retrograde = 0
     antegrade =0
+    idx = 0
+    wave_metrics = {}
 
+    wave_class = {}
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
     for key in waves.keys()[1:]:
         array = waves[key]
-        wave_start_channel = np.min(array[:,0])
-        wave_start_index = np.max(array[np.where(array[:,0] == wave_start_channel),1])
-        wave_end_channel =  np.max(array[:,0])
-        wave_end_index = np.max(array[np.where(array[:,0] == wave_end_channel),1])
-        max_wave_index = np.max(np.max(array[:,1]))
-        min_wave_index = np.min(np.min(array[:,1]))
-        #print(wave_start_channel, wave_start_index, wave_end_channel, wave_end_index)
-        wave_class = {}
-        if ((min_wave_index < wave_start_index) & (min_wave_index < wave_end_index)):
-            #print('Wave is Pacemaking')
-            pacemaking+=1
-        elif ((max_wave_index > wave_start_index) & (max_wave_index > wave_end_index)):
-            #print('Wave is Colliding')
-            colliding+=1
-        elif wave_start_index < wave_end_index:
-            #print('Wave is Retrograde')
-            retrograde+=1
-        else:
-            #print('Wave is Antegrade')
-            antegrade+=1
+        z = np.polyfit(array[:,0], array[:, 1], 1)
+        f = np.poly1d(z)
+        x_new = np.linspace(np.min(array[:, 0]), np.max(array[:, 0]), 10)
+        y_new = f(x_new)
 
-    print('Antegrade', antegrade, 'Retrograde', retrograde, 'Colliding', colliding, 'Pacemaking', pacemaking)
-    return wave_class
+        # reject groups that are grouped for 3 channels or less
+        if(np.max(array[:,0]) - np.min(array[:,0]) < 4):
+            continue
+
+        slope = (y_new[-1] - y_new[0])/(x_new[-1] - x_new[0])
+        if (slope < 0):
+            retrograde+=1
+            wave_class[key] = 0
+        elif (slope > 0):
+            antegrade+=1
+            wave_class[key] = 1
+        else:
+            # reject group that are Instantaneuous
+            print('Instantaneuous wave')
+            continue
+
+        ax1.scatter(array[:,1] , (array[:, 0]), s=20, c='b', marker="s")
+        ax1.plot(y_new, x_new, c='r')
+        plt.text(y_new[-1], x_new[-1], str(key))
+        wave_metrics[key] = (wave_class[key], np.abs(1/slope), x_new[-1] - x_new[0])
+        #print(wave_metrics[key])
+
+    #plt.legend(loc='lower right')
+    #plt.show()
+    print('Antegrade', antegrade, 'Retrograde', retrograde)
+    return wave_metrics
 
 def evaluateTPFPFN(manual_marks, evaluated_marks, tol_win):
     unique_channels = np.unique(manual_marks[:, 0])
@@ -144,39 +155,37 @@ def evaluateTPFPFN(manual_marks, evaluated_marks, tol_win):
     return TP_list
 
 if __name__ == '__main__':
-
+    #
     # data = readSignalPlots('/home/ssat335/Desktop/event_analyser/utils/python_read_data/AM_20120731_ALL_markedData.mat',182200, 185200, 1, 70)
     # waves_matlab = readNiraMatWaves('/home/ssat335/Desktop/event_analyser/utils/matlab_package/AM_20120731_ALL_markedData.mat', 182200, 185200, 1, 70)
     # at_nira_package = readNiraMatActivationTimes('/home/ssat335/Desktop/event_analyser/utils/matlab_package/AM_20120731_ALL_markedData.mat', 182200, 185200, 1, 70)
     # waves_py = readManPyMatFile('/home/ssat335/Desktop/event_analyser/utils/python_package_cyclic/AM_20120731_ALL_markedDataanalysed_data_1.mat', 182200, 185200, 1, 70)
-    # waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/AM_20120731_ALL_markedData_cyclicProp.mat')
+    # waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/AM_20120731_ALL_markedData_cyclicProp_v1.mat')
     # (r_min, r_max, c_min, c_max) = (182200, 185200, 1, 70)
 
     # data = readSignalPlots('/home/ssat335/Desktop/event_analyser/utils/python_read_data/CM_20120414_ALL_markedData.mat',125500, 127500, 1, 70)
     # waves_matlab = readNiraMatWaves('/home/ssat335/Desktop/event_analyser/utils/matlab_package/CM_20120414_ALL_markedData.mat', 125500, 127500, 1, 70)
     # at_nira_package = readNiraMatActivationTimes('/home/ssat335/Desktop/event_analyser/utils/matlab_package/CM_20120414_ALL_markedData.mat', 125500, 127500, 1, 70)
     # waves_py = readManPyMatFile('/home/ssat335/Desktop/event_analyser/utils/python_package_cyclic/CM_20120414_ALL_markedDataanalysed_data_1.mat', 125500, 127500, 1, 70)
-    # waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/CM_20120414_ALL_markedData_cyclicProp.mat')
+    # waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/CM_20120414_ALL_markedData_cyclicProp_v1.mat')
     # (r_min, r_max, c_min, c_max) = (125500, 127500, 1, 70)
 
     # data = readSignalPlots('/home/ssat335/Desktop/event_analyser/utils/python_read_data/DP_20130326_ALL_markedData.mat',101500, 104500, 1, 70)
     # waves_matlab = readNiraMatWaves('/home/ssat335/Desktop/event_analyser/utils/matlab_package/DP_20130326_ALL_markedData.mat', 101500, 104500, 1, 70)
     # at_nira_package = readNiraMatActivationTimes('/home/ssat335/Desktop/event_analyser/utils/matlab_package/DP_20130326_ALL_markedData.mat', 101500, 104500, 1, 70)
     # waves_py = readManPyMatFile('/home/ssat335/Desktop/event_analyser/utils/python_package_cyclic/DP_20130326_ALL_markedDataanalysed_data_1.mat', 101500, 104500, 1, 70)
-    # waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/DP_20130326_ALL_markedData_cyclicProp.mat')
+    # waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/DP_20130326_ALL_markedData_cyclicProp_v1.mat')
     # (r_min, r_max, c_min, c_max) = (101500, 104500, 1, 70)
 
     data = readSignalPlots('/home/ssat335/Desktop/event_analyser/utils/python_read_data/SM_20140520_ALL_markedData.mat',139700, 142200, 1, 72)
     waves_matlab = readNiraMatWaves('/home/ssat335/Desktop/event_analyser/utils/matlab_package/SM_20140520_ALL_markedData.mat', 139700, 142200, 1, 72)
     at_nira_package = readNiraMatActivationTimes('/home/ssat335/Desktop/event_analyser/utils/matlab_package/SM_20140520_ALL_markedData.mat', 139700, 142200, 1, 72)
     waves_py = readManPyMatFile('/home/ssat335/Desktop/event_analyser/utils/python_package_cyclic/SM_20140520_ALL_markedDataanalysed_data_1.mat', 139700, 142200, 1, 72)
-    waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/SM_20140520_ALL_markedData_cyclicProp.mat')
+    waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/SM_20140520_ALL_markedData_cyclicProp_v1.mat')
     (r_min, r_max, c_min, c_max) = (139700, 142200, 1, 72)
 
     activation_points_py = consolidateActivationPoints(waves_py)
     activation_points_manual = consolidateActivationPoints(waves_manual)
-    print(activation_points_manual)
-    print(np.max(activation_points_manual[:,0]))
     TP_matlab = np.array(evaluateTPFPFN(activation_points_manual, at_nira_package, 15))
     TP_python = np.array(evaluateTPFPFN(activation_points_manual, activation_points_py, 15))
 
@@ -190,11 +199,24 @@ if __name__ == '__main__':
     t = range(r_min,r_max)
     for idx in range(c_min, c_max):
         ax1.plot(t, data[idx - 1, :] + 100 * (idx + 1), color = 'b', lineWidth=0.2)
-    ax1.scatter(at_nira_package[:,1], (at_nira_package[:, 0] + 1) * 100, s=10, c='b', marker="s", label='Matlab Package')
+    ax1.scatter(TP_python[:,1] , (TP_python[:, 0] + 1) * 100, s=20, c='b', marker="s", label='True Prediction With Python')
     ax1.scatter(activation_points_manual[:,1], (activation_points_manual[:, 0]) * 100, s=10, c='r', marker="o", label='Manual')
     ax1.scatter(activation_points_py[:,1], (activation_points_py[:, 0] + 1) * 100, s=15, c='k', marker="o", label='Python Package')
+    ax1.scatter(at_nira_package[:,1], (at_nira_package[:, 0] + 1) * 100, s=15, c='g', marker="o", label='Matlab Package')
     plt.legend(loc='lower right');
     plt.show()
+
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # #
+    # t = range(r_min,r_max)
+    # for idx in range(c_min, c_max):
+    #     ax1.plot(t, data[idx - 1, :] + 100 * (idx + 1), color = 'b', lineWidth=0.2)
+    # ax1.scatter(at_nira_package[:,1], (at_nira_package[:, 0] + 1) * 100, s=10, c='b', marker="s", label='Matlab Package')
+    # ax1.scatter(activation_points_manual[:,1], (activation_points_manual[:, 0]) * 100, s=10, c='r', marker="o", label='Manual')
+    # ax1.scatter(activation_points_py[:,1], (activation_points_py[:, 0] + 1) * 100, s=15, c='k', marker="o", label='Python Package')
+    # plt.legend(loc='lower right');
+    # plt.show()
     #plt.savefig('SM_20140520_ALL_markedData.png')
 
     # plt.show()

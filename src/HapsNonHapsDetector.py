@@ -49,7 +49,7 @@ class HapsNonHapsDetector:
         indexes = detect_peaks(in_channel, mph=mph_val, mpd=mpd_val, show=False)
         return indexes
 
-    def detectNonHaps(self, in_channel, mph_val =10, mpd_val = 50):
+    def detectNonHaps(self, in_channel, mph_val =7, mpd_val = 50):
         """
         Detects Non-HAPS in the signals.
         Args:

@@ -30,6 +30,7 @@ import config_global as sp
 
 from gui_plotting.Gui_Window import GuiWindow
 from gui_plotting.Gui_LinePlots import GuiLinePlots
+from gui_plotting.Summary_Analysis import SummaryAnalysis
 
 from HapsNonHapsDetector import HapsNonHapsDetector
 from sklearn.cluster import DBSCAN
@@ -111,14 +112,14 @@ class GuiMain(QtGui.QMainWindow):
         self.set_dataType_text()
 
         self.btnFindSWEvents = QtGui.QPushButton('Detect Haps and Non-Haps Events')
-        self.amplitudeMapping = QtGui.QPushButton('Amplitude and Event Mapping')
+        self.summaryAnalysis = QtGui.QPushButton('Summary analysis')
 
         self.btnFindSWEvents.clicked.connect(lambda: self.detect_haps_non_haps_events())
-        self.amplitudeMapping.clicked.connect(lambda: self.plot_amplitude_map())
+        self.summaryAnalysis.clicked.connect(lambda: self.summary_analysis())
 
         self.ctrlsLayout.addWidget(self.dataTypeLabel, row=self.add_one(), col=0)
         self.ctrlsLayout.addWidget(self.btnFindSWEvents, row=self.add_one(), col=0)
-        self.ctrlsLayout.addWidget(self.amplitudeMapping, row=self.add_one(), col=0)
+        self.ctrlsLayout.addWidget(self.summaryAnalysis, row=self.add_one(), col=0)
 
     # ==== EVENTS ====
 
@@ -128,13 +129,12 @@ class GuiMain(QtGui.QMainWindow):
         self.statBar.showMessage("Detecting Events. . .")
 
         # Setup data and params
-        self.dataForMarking = sp.dat['data']['sig'][0][0]
+        self.dataForMarking = sp.dat
 
         #detect the Haps and Non-Haps as labels 2 and 1 respectively in a matrix of
         #same dimension as input dataset
         detector = HapsNonHapsDetector(self.dataForMarking)
         data_label = detector.obtainHapsNonHapsLabel()
-        print(data_label.shape)
         scatter_points = np.where(data_label == 1)
         activation_points = np.array(scatter_points).transpose()
         activation_points[:, 0] = activation_points[:, 0] * 22
@@ -143,7 +143,7 @@ class GuiMain(QtGui.QMainWindow):
         core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
         labels = db.labels_
-        self.LinePlots.mark_events(data_label, core_samples_mask, labels, 1)
+        self.clustered_cyclic = self.LinePlots.mark_events(data_label, core_samples_mask, labels, 1)
 
         scatter_points = np.where(data_label == 2)
         activation_points = np.array(scatter_points).transpose()
@@ -153,17 +153,14 @@ class GuiMain(QtGui.QMainWindow):
         core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
         labels = db.labels_
-        self.LinePlots.mark_events(data_label, core_samples_mask, labels, 2)
+        self.clustered_haps = self.LinePlots.mark_events(data_label, core_samples_mask, labels, 2)
 
-        # Output (logging and for user)
-        print "Plotting done"
         # Output number of events marked (note this number may differ from the CNN n of predictions)
         statBarMessage = " Events marked "
         self.statBar.showMessage(statBarMessage)
 
-    def plot_amplitude_map(self):
-        pass
-        #self.animatedMap = AnimateMapped()
+    def summary_analysis(self):
+        self.summaryWin = SummaryAnalysis(self.clustered_cyclic, self.clustered_haps, sp.dat)
 
     def setup_file_menu_triggers(self):
         self.ui.ui_menubar.quitAction.triggered.connect(lambda: self.exit_app())
