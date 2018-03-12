@@ -177,11 +177,11 @@ if __name__ == '__main__':
     # waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/DP_20130326_ALL_markedData_cyclicProp_v1.mat')
     # (r_min, r_max, c_min, c_max) = (101500, 104500, 1, 70)
 
-    data = readSignalPlots('/home/ssat335/Desktop/event_analyser/utils/python_read_data/SM_20140520_ALL_markedData.mat',139700, 142200, 1, 72)
-    waves_matlab = readNiraMatWaves('/home/ssat335/Desktop/event_analyser/utils/matlab_package/SM_20140520_ALL_markedData.mat', 139700, 142200, 1, 72)
-    at_nira_package = readNiraMatActivationTimes('/home/ssat335/Desktop/event_analyser/utils/matlab_package/SM_20140520_ALL_markedData.mat', 139700, 142200, 1, 72)
-    waves_py = readManPyMatFile('/home/ssat335/Desktop/event_analyser/utils/python_package_cyclic/SM_20140520_ALL_markedDataanalysed_data_1.mat', 139700, 142200, 1, 72)
-    waves_manual = readNiraMatFile('/home/ssat335/Desktop/event_analyser/utils/manual_marks/SM_20140520_ALL_markedData_cyclicProp_v1.mat')
+    data = readSignalPlots('python_read_data/SM_20140520_ALL_markedData.mat',139700, 142200, 1, 72)
+    waves_matlab = readNiraMatWaves('matlab_package/SM_20140520_ALL_markedData.mat', 139700, 142200, 1, 72)
+    at_nira_package = readNiraMatActivationTimes('matlab_package/SM_20140520_ALL_markedData.mat', 139700, 142200, 1, 72)
+    waves_py = readManPyMatFile('python_package_cyclic/SM_20140520_ALL_markedDataanalysed_data_1.mat', 139700, 142200, 1, 72)
+    waves_manual = readNiraMatFile('manual_marks/SM_20140520_ALL_markedData_cyclicProp_v1.mat')
     (r_min, r_max, c_min, c_max) = (139700, 142200, 1, 72)
 
     activation_points_py = consolidateActivationPoints(waves_py)
