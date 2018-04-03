@@ -22,7 +22,13 @@ class GuiFileMenu(QtGui.QMenuBar):
 
 
     def add_menu_contents(self):
-        ## Exit 
+        ## Load normal file
+        self.loadNormalAction = QtGui.QAction('&Load Normal .mat', self)
+        self.loadNormalAction.setStatusTip('')
+
+        self.menu.addAction(self.loadNormalAction)
+
+        ## Exit
         self.quitAction = QtGui.QAction('Close', self)
         self.quitAction.setStatusTip('Quit the program')
         self.quitAction.setShortcut('Ctrl+Q')

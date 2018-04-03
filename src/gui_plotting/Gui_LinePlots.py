@@ -31,8 +31,8 @@ class GuiLinePlots:
 
         self.set_current_dataset()
 
-        self.plotsScroll = pg.PlotWidget(title="Electrophysiology Line Graphs")
-        self.plotsZoomed = pg.PlotWidget(title="Zoomed-in electrophysiology")
+        self.plotsScroll = pg.PlotWidget(title="Pressure Waves Line Graphs")
+        self.plotsZoomed = pg.PlotWidget(title="Zoomed-in Line Graphs")
         self.set_rect_region_ROI()
 
         self.add_scatter_plots()

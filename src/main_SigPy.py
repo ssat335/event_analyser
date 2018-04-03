@@ -27,6 +27,9 @@ np.set_printoptions(linewidth=1000, precision=3, threshold=np.inf)
 Manometry Pressure Data
 """
 
+sp.datFileName = '/media/hpc/codes/GitLab/event_analyser/utils/python_read_data/CM_20120414_ALL_markedData.mat'
+sp.dat = sio.loadmat(sp.datFileName)['data']['sig'][0][0][1:50, 0:20000]
+sp.sample_frequency = 1
 
 # Start Qt event loop unless running in interactive mode.
 if __name__ == '__main__' :

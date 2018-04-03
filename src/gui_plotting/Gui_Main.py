@@ -35,6 +35,7 @@ from gui_plotting.Summary_Analysis import SummaryAnalysis
 from HapsNonHapsDetector import HapsNonHapsDetector
 from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
+import scipy.io as sio
 
 class GuiMain(QtGui.QMainWindow):
 
@@ -137,23 +138,27 @@ class GuiMain(QtGui.QMainWindow):
         data_label = detector.obtainHapsNonHapsLabel()
         scatter_points = np.where(data_label == 1)
         activation_points = np.array(scatter_points).transpose()
-        activation_points[:, 0] = activation_points[:, 0] * 22
-        # Compute DBSCAN
-        db = DBSCAN(eps=50, min_samples=3).fit(activation_points)
-        core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-        core_samples_mask[db.core_sample_indices_] = True
-        labels = db.labels_
-        self.clustered_cyclic = self.LinePlots.mark_events(data_label, core_samples_mask, labels, 1)
+        self.clustered_cyclic = {}
+        if activation_points.size:
+            activation_points[:, 0] = activation_points[:, 0] * 22
+            # Compute DBSCAN
+            db = DBSCAN(eps=50, min_samples=3).fit(activation_points)
+            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            core_samples_mask[db.core_sample_indices_] = True
+            labels = db.labels_
+            self.clustered_cyclic = self.LinePlots.mark_events(data_label, core_samples_mask, labels, 1)
 
         scatter_points = np.where(data_label == 2)
         activation_points = np.array(scatter_points).transpose()
-        activation_points[:, 0] = activation_points[:, 0] * 35
-        # Compute DBSCAN
-        db = DBSCAN(eps=100, min_samples=3).fit(activation_points)
-        core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
-        core_samples_mask[db.core_sample_indices_] = True
-        labels = db.labels_
-        self.clustered_haps = self.LinePlots.mark_events(data_label, core_samples_mask, labels, 2)
+        self.clustered_haps = {}
+        if activation_points.size:
+            activation_points[:, 0] = activation_points[:, 0] * 35
+            # Compute DBSCAN
+            db = DBSCAN(eps=100, min_samples=3).fit(activation_points)
+            core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
+            core_samples_mask[db.core_sample_indices_] = True
+            labels = db.labels_
+            self.clustered_haps = self.LinePlots.mark_events(data_label, core_samples_mask, labels, 2)
 
         # Output number of events marked (note this number may differ from the CNN n of predictions)
         statBarMessage = " Events marked "
@@ -163,7 +168,25 @@ class GuiMain(QtGui.QMainWindow):
         self.summaryWin = SummaryAnalysis(self.clustered_cyclic, self.clustered_haps, sp.dat)
 
     def setup_file_menu_triggers(self):
+        self.ui.ui_menubar.loadNormalAction.triggered.connect(
+            lambda: self.load_file_selector__gui_set_data())
         self.ui.ui_menubar.quitAction.triggered.connect(lambda: self.exit_app())
+
+    def load_file_selector__gui_set_data(self):
+
+        sp.datFileName = QtGui.QFileDialog.getOpenFileName(None, "Select File", "", "*.mat")
+
+        #if not (sys.platform == "linux2") :
+        #sp.datFileName = sp.datFileName
+        print(sp.datFileName)
+        sp.dat = sio.loadmat(sp.datFileName)['data']['sig'][0][0]
+
+        self.statBar.showMessage("Loading ...")
+
+        self.reset_add_plots()
+        self.set_dataType_text()
+
+        self.statBar.showMessage("Finished loading.")
 
     def exit_app(self) :
         self.close()
